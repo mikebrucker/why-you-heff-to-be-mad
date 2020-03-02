@@ -1,0 +1,10 @@
+.Piece {
+  position: fixed;
+  z-index: 9999;
+  border-radius: 999px;
+  width: 36px;
+  height: 36px;
+  margin: 6px;
+
+  transition: top 0.333s, left 0.333s;
+}
