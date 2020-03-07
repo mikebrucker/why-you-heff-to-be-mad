@@ -29,13 +29,13 @@ export default class BoardSpace extends Component<IBoardSpace, {}> {
         : { position: "absolute", top: `-9999px`, left: `-9999px` };
 
     const startSpotColor =
-      red === 1
+      red === 1 || red > 40
         ? "red"
-        : black === 1
+        : black === 1 || black > 40
         ? "black"
-        : yellow === 1
+        : yellow === 1 || yellow > 40
         ? "yellow"
-        : green === 1
+        : green === 1 || green > 40
         ? "green"
         : "papayawhip";
 

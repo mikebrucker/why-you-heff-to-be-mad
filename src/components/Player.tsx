@@ -29,10 +29,11 @@ interface IPlayerState {
   readonly coordinates: ICoordinates;
   readonly boardSpaces: Array<JSX.Element>;
   readonly color: string;
-  roll: number;
+  roll: Array<number>;
   turn: boolean;
   allowedToRoll: boolean;
   allowedToMove: boolean;
+  ableToMove: boolean;
   initMove: boolean;
   p1: IPlayerPiece;
   p2: IPlayerPiece;
@@ -45,10 +46,11 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
     boardSpaces: this.props.boardSpaces,
     coordinates: { x: 0, y: 0 },
     color: this.props.color,
-    roll: 0,
+    roll: [],
     turn: true,
     allowedToRoll: true,
     allowedToMove: false,
+    ableToMove: false,
     initMove: false,
     p1: {
       coordinates: { x: 0, y: 0 },
@@ -73,6 +75,198 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
       default: { x: 0, y: 0 },
       boardSpace: 0,
       home: false
+    }
+  };
+
+  private makePieceGoHome = (myColor: string, index: keyof IPlayerState) => {
+    const piece: IPlayerPiece = this.state[index] as IPlayerPiece;
+    if (piece.coordinates !== piece.default) {
+      const updatePiece: IPlayerPiece = {
+        ...piece,
+        coordinates: piece.default,
+        boardSpace: 0
+      };
+      this.setState(({ [index]: updatePiece } as {}) as IPlayerState);
+    }
+  };
+
+  private rollDie = (numberOfRolls: number): Array<number> => {
+    const rolls = [];
+    for (let i = 0; i < numberOfRolls; i++) {
+      rolls.push(Math.ceil(Math.random() * 6));
+    }
+    return rolls;
+  };
+
+  private moveToNextSpace = (piece: IPlayerPiece, roll?: number) => {
+    const { color, boardSpaces } = this.state;
+    const newRoll = roll ? roll - 1 : 0;
+    const boardSpace = piece.boardSpace + 1;
+    const nextSpace = boardSpaces.filter(
+      space => space.props[color] === boardSpace
+    )[0];
+    const finalSpace = nextSpace.props.black
+      ? nextSpace.props.black
+      : boardSpace;
+    const coordinates: ICoordinates = {
+      x: nextSpace.props.coordinates.x,
+      y: nextSpace.props.coordinates.y
+    };
+    const originalSpace =
+      roll && piece.boardSpace
+        ? boardSpaces.filter(
+            space => space.props[color] === piece.boardSpace
+          )[0].props.black
+        : null;
+
+    return { newRoll, boardSpace, finalSpace, coordinates, originalSpace };
+  };
+
+  private moveFromJail = (piece: IPlayerPiece, pieceNumber: string) => {
+    const { color } = this.state;
+    const { boardSpace, finalSpace, coordinates } = this.moveToNextSpace(piece);
+
+    const occupied: IBoardSpaceProps = this.props.isSpaceOccupied(
+      finalSpace
+    ) as IBoardSpaceProps;
+
+    if (occupied.occupied) {
+      this.props.removePiece(occupied);
+    }
+    this.props.occupySpace(finalSpace, color, pieceNumber);
+
+    const updatePiece = { ...piece, boardSpace, coordinates };
+
+    this.setState(
+      ({
+        [pieceNumber]: updatePiece,
+        allowedToMove: true,
+        initMove: true
+      } as {}) as IPlayerState,
+      () => {
+        setTimeout(() => {
+          this.setState({ roll: this.rollDie(1) }, () =>
+            setTimeout(() => {
+              this.moveMe(pieceNumber as keyof IPlayerState);
+            }, 333)
+          );
+        }, 333);
+      }
+    );
+  };
+
+  private moveMe = (pieceNumber: keyof IPlayerState) => {
+    const { turn, allowedToMove } = this.state;
+    const piece: IPlayerPiece = this.state[pieceNumber] as IPlayerPiece;
+
+    if (turn && allowedToMove && piece.boardSpace && piece.boardSpace < 44) {
+      const { roll } = this.state;
+
+      if (roll.length === 1 && roll[0] > 0) {
+        const myRoll = roll[0];
+        const { color, initMove } = this.state;
+        const {
+          newRoll,
+          boardSpace,
+          finalSpace,
+          coordinates,
+          originalSpace
+        } = this.moveToNextSpace(piece, myRoll);
+
+        if (piece.boardSpace + myRoll > 40) {
+          // logic to make sure it cant replace a home piece or go past last space goes here
+          return this.setState({
+            allowedToRoll: true,
+            allowedToMove: false,
+            roll: [0]
+          });
+        }
+
+        if (originalSpace && initMove) {
+          this.props.emptySpace(originalSpace);
+          this.setState({ initMove: false });
+        }
+
+        if (newRoll === 0 && boardSpace > 0 && boardSpace < 41) {
+          const occupied: IBoardSpaceProps = this.props.isSpaceOccupied(
+            finalSpace
+          ) as IBoardSpaceProps;
+
+          if (occupied.occupied) {
+            this.props.removePiece(occupied);
+          }
+          this.props.occupySpace(finalSpace, color, pieceNumber);
+        }
+
+        const home = boardSpace > 40;
+        const updatePiece = { ...piece, boardSpace, coordinates, home };
+        this.setState(
+          ({
+            roll: [newRoll],
+            [pieceNumber]: updatePiece
+          } as {}) as IPlayerState,
+          () =>
+            setTimeout(() => {
+              this.moveMe(pieceNumber);
+            }, 333)
+        );
+      } else {
+        this.setState({ allowedToRoll: true, allowedToMove: false });
+      }
+    }
+  };
+
+  private myTurn = () => {
+    const { turn, allowedToRoll, p1, p2, p3, p4 } = this.state;
+
+    if (turn && allowedToRoll) {
+      const roll =
+        p1.boardSpace === 0 &&
+        p2.boardSpace === 0 &&
+        p3.boardSpace === 0 &&
+        p4.boardSpace === 0
+          ? this.rollDie(3)
+          : this.rollDie(1);
+
+      if (
+        !roll.includes(6) &&
+        p1.boardSpace === 0 &&
+        p2.boardSpace === 0 &&
+        p3.boardSpace === 0 &&
+        p4.boardSpace === 0
+      ) {
+        this.setState({
+          roll,
+          allowedToRoll: true
+        });
+      } else if (roll.includes(6)) {
+        const piece = [p1, p2, p3, p4]
+          .map((p, i) => {
+            return { p, num: `p${i + 1}` };
+          })
+          .filter(p => p.p.boardSpace === 0)[0];
+        // if you have jail pieces auto moves out one
+        if (piece) {
+          this.setState({
+            roll
+          });
+          return this.moveFromJail(piece.p, piece.num);
+        } else {
+          this.setState({
+            roll,
+            allowedToRoll: false,
+            allowedToMove: true,
+            initMove: true
+          });
+        }
+      } else {
+        this.setState({
+          roll,
+          allowedToRoll: false,
+          allowedToMove: true,
+          initMove: true
+        });
+      }
     }
   };
 
@@ -106,100 +300,18 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
     }
   }
 
-  public makePieceGoHome = (myColor: string, index: keyof IPlayerState) => {
-    const piece: IPlayerPiece = this.state[index] as IPlayerPiece;
-    if (piece.coordinates !== piece.default) {
-      const updatePiece: IPlayerPiece = {
-        ...piece,
-        coordinates: piece.default,
-        boardSpace: 0
-      };
-      this.setState(({ [index]: updatePiece } as {}) as IPlayerState);
-    }
-  };
-
-  public rollDie = (): number => {
-    return Math.ceil(Math.random() * 6);
-  };
-
-  public myTurn = () => {
-    const { allowedToRoll, turn } = this.state;
-
-    if (turn && allowedToRoll) {
-      const roll = this.rollDie();
-      this.setState({
-        roll,
-        allowedToRoll: false,
-        allowedToMove: true,
-        initMove: true
-      });
-    }
-  };
-
-  public moveMe = (pieceNumber: keyof IPlayerState) => {
-    const { turn, allowedToMove, initMove, roll } = this.state;
-
-    if (turn && allowedToMove && roll > 0) {
-      const { color, boardSpaces } = this.state;
-      const piece: IPlayerPiece = this.state[pieceNumber] as IPlayerPiece;
-
-      const newRoll = piece.boardSpace > 0 ? roll - 1 : roll;
-
-      let boardSpace = piece.boardSpace + 1;
-
-      const nextSpace = boardSpaces.filter(
-        space => space.props[color] === boardSpace
-      )[0];
-
-      const nextSpaceCoordinates = nextSpace.props.coordinates;
-
-      let coordinates: ICoordinates = {
-        x: nextSpaceCoordinates.x,
-        y: nextSpaceCoordinates.y
-      };
-
-      const originalSpace = piece.boardSpace
-        ? boardSpaces.filter(
-            space => space.props[color] === piece.boardSpace
-          )[0].props.black
-        : null;
-
-      if (originalSpace && initMove) {
-        this.props.emptySpace(originalSpace);
-        this.setState({ initMove: false });
-      }
-
-      if (newRoll === 0 && boardSpace > 0 && boardSpace < 41) {
-        const finalSpace = nextSpace.props.black;
-        const occupied: IBoardSpaceProps = this.props.isSpaceOccupied(
-          finalSpace
-        ) as IBoardSpaceProps;
-
-        if (occupied.occupied) {
-          this.props.removePiece(occupied);
-        }
-        this.props.occupySpace(finalSpace, color, pieceNumber);
-      }
-
-      const updatePiece = { ...piece, boardSpace, coordinates };
-
-      this.setState(
-        ({ roll: newRoll, [pieceNumber]: updatePiece } as {}) as IPlayerState,
-        () =>
-          setTimeout(() => {
-            this.moveMe(pieceNumber);
-          }, 333)
-      );
-    } else {
-      this.setState({ allowedToRoll: true, allowedToMove: false });
-    }
-  };
-
   public render() {
     const { color, coordinates, p1, p2, p3, p4, roll, turn } = this.state;
     const x = coordinates.x;
     const y = coordinates.y;
-    const displayRoll = turn ? (roll > 0 ? roll : "Click to Roll") : "";
+
+    const displayRoll = turn
+      ? roll.length > 1
+        ? `${roll[0]}, ${roll[1]}, ${roll[2]}`
+        : roll.length === 1 && roll[0] > 0
+        ? `${roll[0]}`
+        : "Click to Roll"
+      : "Wait Your Turn";
 
     const style: CSS.Properties =
       coordinates && x && y
@@ -226,25 +338,21 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
           <Piece
             onClick={this.moveMe.bind(this, "p1")}
             color={color}
-            boardSpace={0}
             coordinates={{ x: p1.coordinates.x, y: p1.coordinates.y }}
           />
           <Piece
             onClick={this.moveMe.bind(this, "p2")}
             color={color}
-            boardSpace={0}
             coordinates={{ x: p2.coordinates.x, y: p2.coordinates.y }}
           />
           <Piece
             onClick={this.moveMe.bind(this, "p3")}
             color={color}
-            boardSpace={0}
             coordinates={{ x: p3.coordinates.x, y: p3.coordinates.y }}
           />
           <Piece
             onClick={this.moveMe.bind(this, "p4")}
             color={color}
-            boardSpace={0}
             coordinates={{ x: p4.coordinates.x, y: p4.coordinates.y }}
           />
         </>

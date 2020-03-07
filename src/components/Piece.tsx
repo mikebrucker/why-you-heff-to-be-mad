@@ -5,7 +5,6 @@ import { ICoordinates } from "./Player";
 
 interface IPiece {
   color: string;
-  boardSpace: number;
   coordinates: ICoordinates;
   onClick: (e: any) => void;
 }
@@ -13,7 +12,6 @@ interface IPiece {
 export default class Piece extends Component<IPiece, IPiece> {
   public state = {
     color: this.props.color,
-    boardSpace: this.props.boardSpace,
     coordinates: this.props.coordinates,
     onClick: this.props.onClick
   };
@@ -47,7 +45,7 @@ export default class Piece extends Component<IPiece, IPiece> {
         onClick={this.props.onClick}
         className={`Piece ${color}-piece`}
         style={style}
-      ></div>
+      />
     );
   }
 }

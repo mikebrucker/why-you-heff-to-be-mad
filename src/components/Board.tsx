@@ -171,7 +171,7 @@ export default class Board extends Component<{}, IBoardState> {
         <BoardSpace
           occupied={o}
           pieceNumber={p}
-          key={b}
+          key={i}
           letter={letter}
           black={b}
           yellow={y}
@@ -186,18 +186,18 @@ export default class Board extends Component<{}, IBoardState> {
     }
 
     for (var j = 0; j < boardHomeCoordinates.length; j++) {
-      const b = j < 4 ? 1 : 0;
-      const y = j > 3 && j < 8 ? 1 : 0;
-      const g = j > 7 && j < 12 ? 1 : 0;
-      const r = j > 11 && j ? 1 : 0;
-      const letter = ["a", "b", "c", "d"];
       const k = j % 4;
+      const b = j < 4 ? k + 41 : 0;
+      const y = j > 3 && j < 8 ? k + 41 : 0;
+      const g = j > 7 && j < 12 ? k + 41 : 0;
+      const r = j > 11 && j ? k + 41 : 0;
+      const letter = ["a", "b", "c", "d"];
 
       boardSpaces.push(
         <BoardSpace
           occupied={""}
           pieceNumber={""}
-          key={j + 101}
+          key={j + 40}
           letter={letter[k]}
           black={b}
           yellow={y}
