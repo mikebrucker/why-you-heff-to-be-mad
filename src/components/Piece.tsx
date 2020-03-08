@@ -3,17 +3,19 @@ import CSS from "csstype";
 import "../scss/Piece.scss";
 import { ICoordinates } from "./Player";
 
-interface IPiece {
+interface IPieceProps {
   color: string;
   coordinates: ICoordinates;
   onClick: (e: any) => void;
 }
 
-export default class Piece extends Component<IPiece, IPiece> {
+interface IPieceState {
+  coordinates: ICoordinates;
+}
+
+export default class Piece extends Component<IPieceProps, IPieceState> {
   public state = {
-    color: this.props.color,
-    coordinates: this.props.coordinates,
-    onClick: this.props.onClick
+    coordinates: this.props.coordinates
   };
 
   componentDidUpdate() {
@@ -27,7 +29,7 @@ export default class Piece extends Component<IPiece, IPiece> {
   }
 
   public render() {
-    const { color, coordinates } = this.state;
+    const { color, coordinates } = this.props;
     const x = coordinates.x;
     const y = coordinates.y;
 
@@ -40,12 +42,6 @@ export default class Piece extends Component<IPiece, IPiece> {
           }
         : { position: "absolute", top: `0`, left: `0` };
 
-    return (
-      <div
-        onClick={this.props.onClick}
-        className={`Piece ${color}-piece`}
-        style={style}
-      />
-    );
+    return <div onClick={this.props.onClick} className={`Piece ${color}-piece`} style={style} />;
   }
 }

@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import CSS from "csstype";
 import "../scss/BoardSpace.scss";
 import { ICoordinates } from "./Player";
@@ -13,36 +13,36 @@ interface IBoardSpace {
   occupied: string;
   pieceNumber: string;
 }
+// const Welcome: React.SFC<WelcomeProps> = (props) => {
+const BoardSpace: React.SFC<IBoardSpace> = props => {
+  const { coordinates, red, black, yellow, green, letter } = props;
+  const { x, y } = coordinates;
 
-export default class BoardSpace extends Component<IBoardSpace, {}> {
-  public render() {
-    const { coordinates, red, black, yellow, green, letter } = this.props;
-    const { x, y } = coordinates;
+  const style: CSS.Properties =
+    x && y
+      ? {
+          position: "absolute",
+          top: `${y * 50}px`,
+          left: `${x * 50}px`
+        }
+      : { position: "absolute", top: `-9999px`, left: `-9999px` };
 
-    const style: CSS.Properties =
-      x && y
-        ? {
-            position: "absolute",
-            top: `${y * 50}px`,
-            left: `${x * 50}px`
-          }
-        : { position: "absolute", top: `-9999px`, left: `-9999px` };
+  const startSpotColor =
+    red === 1 || red > 40
+      ? "red"
+      : black === 1 || black > 40
+      ? "black"
+      : yellow === 1 || yellow > 40
+      ? "yellow"
+      : green === 1 || green > 40
+      ? "green"
+      : "papayawhip";
 
-    const startSpotColor =
-      red === 1 || red > 40
-        ? "red"
-        : black === 1 || black > 40
-        ? "black"
-        : yellow === 1 || yellow > 40
-        ? "yellow"
-        : green === 1 || green > 40
-        ? "green"
-        : "papayawhip";
+  return (
+    <div className={`BoardSpace ${startSpotColor}`} style={style}>
+      <div className="letter">{letter}</div>
+    </div>
+  );
+};
 
-    return (
-      <div className={`BoardSpace ${startSpotColor}`} style={style}>
-        <div className="letter">{letter}</div>
-      </div>
-    );
-  }
-}
+export default BoardSpace;
