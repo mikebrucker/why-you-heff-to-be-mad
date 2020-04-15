@@ -1,5 +1,6 @@
 import { ICoordinates } from "../components/Player";
 
+// coordinates for each tile
 export const boardMapCoordinates: Array<ICoordinates> = [
   // black start
   { x: 5, y: 11 },
@@ -46,23 +47,24 @@ export const boardMapCoordinates: Array<ICoordinates> = [
   { x: 7, y: 11 },
   { x: 6, y: 11 }
 ];
+
 export const boardHomeCoordinates: Array<ICoordinates> = [
-  // black
+  // black home
   { x: 6, y: 10 },
   { x: 6, y: 9 },
   { x: 6, y: 8 },
   { x: 6, y: 7 },
-  // yellow
+  // yellow home
   { x: 2, y: 6 },
   { x: 3, y: 6 },
   { x: 4, y: 6 },
   { x: 5, y: 6 },
-  // green
+  // green home
   { x: 6, y: 2 },
   { x: 6, y: 3 },
   { x: 6, y: 4 },
   { x: 6, y: 5 },
-  // red
+  // red home
   { x: 10, y: 6 },
   { x: 9, y: 6 },
   { x: 8, y: 6 },

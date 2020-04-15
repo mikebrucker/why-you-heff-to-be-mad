@@ -3,7 +3,7 @@ import CSS from "csstype";
 import "../scss/BoardSpace.scss";
 import { ICoordinates } from "./Player";
 
-interface IBoardSpace {
+interface IBoardSpaceProps {
   coordinates: ICoordinates;
   red: number;
   black: number;
@@ -13,8 +13,8 @@ interface IBoardSpace {
   occupied: string;
   pieceNumber: string;
 }
-// const Welcome: React.SFC<WelcomeProps> = (props) => {
-const BoardSpace: React.SFC<IBoardSpace> = props => {
+
+const BoardSpace: React.SFC<IBoardSpaceProps> = props => {
   const { coordinates, red, black, yellow, green, letter } = props;
   const { x, y } = coordinates;
 

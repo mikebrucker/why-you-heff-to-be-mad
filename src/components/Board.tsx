@@ -85,6 +85,7 @@ export default class Board extends Component<{}, IBoardState> {
     const { pieceForRemoval } = this.state;
     const boardSpaces: Array<JSX.Element> = [];
 
+    // Create boardspaces 1-40
     for (let i: number = 0; i < boardMapCoordinates.length; i++) {
       const currentSpace = this.state.board[i];
       const o = currentSpace.occupied;
@@ -94,6 +95,7 @@ export default class Board extends Component<{}, IBoardState> {
       const g = b > 20 ? b - 20 : b + 20;
       const r = b > 30 ? b - 30 : b + 10;
       const letter = b === 1 || y === 1 || g === 1 || r === 1 ? "A" : "";
+
       boardSpaces.push(
         <BoardSpace
           occupied={o}
@@ -112,6 +114,7 @@ export default class Board extends Component<{}, IBoardState> {
       );
     }
 
+    // Create home board spaces
     for (var j = 0; j < boardHomeCoordinates.length; j++) {
       const k = j % 4;
       const b = j < 4 ? k + 41 : 0;
@@ -138,44 +141,24 @@ export default class Board extends Component<{}, IBoardState> {
       );
     }
 
+    const players = ["black", "yellow", "green", "red"].map(color => {
+      return (
+        <Player
+          key={color}
+          color={color}
+          boardSpaces={boardSpaces}
+          pieceForRemoval={pieceForRemoval}
+          removePiece={this.removePiece}
+          occupySpace={this.occupySpace}
+          emptySpace={this.emptySpace}
+          isSpaceOccupied={this.isSpaceOccupied}
+        />
+      );
+    });
+
     return (
       <div className="Board">
-        <Player
-          removePiece={this.removePiece}
-          occupySpace={this.occupySpace}
-          emptySpace={this.emptySpace}
-          isSpaceOccupied={this.isSpaceOccupied}
-          boardSpaces={boardSpaces}
-          color="black"
-          pieceForRemoval={pieceForRemoval}
-        />
-        <Player
-          removePiece={this.removePiece}
-          occupySpace={this.occupySpace}
-          emptySpace={this.emptySpace}
-          isSpaceOccupied={this.isSpaceOccupied}
-          boardSpaces={boardSpaces}
-          color="yellow"
-          pieceForRemoval={pieceForRemoval}
-        />
-        <Player
-          removePiece={this.removePiece}
-          occupySpace={this.occupySpace}
-          emptySpace={this.emptySpace}
-          isSpaceOccupied={this.isSpaceOccupied}
-          boardSpaces={boardSpaces}
-          color="green"
-          pieceForRemoval={pieceForRemoval}
-        />
-        <Player
-          removePiece={this.removePiece}
-          occupySpace={this.occupySpace}
-          emptySpace={this.emptySpace}
-          isSpaceOccupied={this.isSpaceOccupied}
-          boardSpaces={boardSpaces}
-          color="red"
-          pieceForRemoval={pieceForRemoval}
-        />
+        {players}
         {boardSpaces}
       </div>
     );

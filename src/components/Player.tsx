@@ -3,19 +3,28 @@ import CSS from "csstype";
 import "../scss/Player.scss";
 
 import Piece from "./Piece";
-import { black, yellow, green, red } from "../models/Player";
 import { IBoardSpaceProps } from "./Board";
+import { black, yellow, green, red } from "../models/Player";
 
 export interface ICoordinates {
   x: number;
   y: number;
 }
-interface IPlayerPiece {
+export interface IPlayerPiece {
   coordinates: ICoordinates;
   default: ICoordinates;
   boardSpace: number;
   home: boolean;
+  cantMove: boolean;
 }
+interface IMoveToNextSpace {
+  newRoll: number;
+  boardSpace: number;
+  finalSpace: number;
+  coordinates: ICoordinates;
+  originalSpace: number;
+}
+
 interface IPlayerProps {
   color: string;
   boardSpaces: Array<JSX.Element>;
@@ -25,6 +34,7 @@ interface IPlayerProps {
   isSpaceOccupied: (space: number) => IBoardSpaceProps;
   removePiece: (pieceForRemoval: IBoardSpaceProps) => void;
 }
+
 interface IPlayerState {
   readonly coordinates: ICoordinates;
   readonly boardSpaces: Array<JSX.Element>;
@@ -42,45 +52,93 @@ interface IPlayerState {
   p4: IPlayerPiece;
 }
 
+const EMPTY_PLAYER = {
+  coordinates: { x: 0, y: 0 },
+  default: { x: 0, y: 0 },
+  boardSpace: 0,
+  home: false,
+  cantMove: false
+};
+
 export default class Player extends Component<IPlayerProps, IPlayerState> {
   public state = {
     boardSpaces: this.props.boardSpaces,
     coordinates: { x: 0, y: 0 },
     color: this.props.color,
-    roll: [],
+    roll: [0],
     turn: true,
     allowedToRoll: true,
     allowedToMove: false,
     moveOnlyOnePiece: false,
     moving: false,
     initMove: false,
-    p1: {
-      coordinates: { x: 0, y: 0 },
-      default: { x: 0, y: 0 },
-      boardSpace: 0,
-      home: false
-    },
-    p2: {
-      coordinates: { x: 0, y: 0 },
-      default: { x: 0, y: 0 },
-      boardSpace: 0,
-      home: false
-    },
-    p3: {
-      coordinates: { x: 0, y: 0 },
-      default: { x: 0, y: 0 },
-      boardSpace: 0,
-      home: false
-    },
-    p4: {
-      coordinates: { x: 0, y: 0 },
-      default: { x: 0, y: 0 },
-      boardSpace: 0,
-      home: false
-    }
+    p1: EMPTY_PLAYER,
+    p2: EMPTY_PLAYER,
+    p3: EMPTY_PLAYER,
+    p4: EMPTY_PLAYER
   };
 
-  private makePieceGoHome = (myColor: string, index: keyof IPlayerState) => {
+  private canOtherPiecesMove = (pieceNumber: keyof IPlayerState, boardSpace: number) => {
+    const piecesToReturn = [];
+    const otherPieces = this.otherPieces(pieceNumber);
+    const otherPieceKeys = [
+      "p1" as keyof IPlayerState,
+      "p2" as keyof IPlayerState,
+      "p3" as keyof IPlayerState,
+      "p4" as keyof IPlayerState
+    ].filter(p => p !== pieceNumber);
+    const otherPiecesSpaces = otherPieces.map(p => p.boardSpace);
+    if (boardSpace === 44) {
+      if (otherPiecesSpaces.includes(43)) {
+        const piece = otherPieces
+          .map((p, i) => {
+            return { [otherPieceKeys[i]]: { ...p, cantMove: true } };
+          })
+          .filter((p, i) => p[otherPieceKeys[i]].boardSpace === 43)[0];
+        piecesToReturn.push(piece);
+        if (otherPiecesSpaces.includes(42)) {
+          const piece = otherPieces
+            .map((p, i) => {
+              return { [otherPieceKeys[i]]: { ...p, cantMove: true } };
+            })
+            .filter((p, i) => p[otherPieceKeys[i]].boardSpace === 42)[0];
+          piecesToReturn.push(piece);
+        }
+      }
+    } else {
+      // if boardSpace === 43
+      if (otherPiecesSpaces.includes(42)) {
+        const piece = otherPieces
+          .map((p, i) => {
+            return { [otherPieceKeys[i]]: { ...p, cantMove: true } };
+          })
+          .filter((p, i) => p[otherPieceKeys[i]].boardSpace === 42)[0];
+        piecesToReturn.push(piece);
+      }
+    }
+    let returnValue = {};
+    if (piecesToReturn.length > 0) {
+      returnValue = piecesToReturn.reduce((obj, item) => {
+        return {
+          ...obj,
+          ...item
+        };
+      }, {});
+    }
+    return returnValue;
+  };
+
+  private otherPieces = (pieceNumber: keyof IPlayerState): Array<IPlayerPiece> => {
+    return ["p1", "p2", "p3", "p4"]
+      .filter(p => p !== pieceNumber)
+      .map(p => {
+        const x: keyof IPlayerState = p as keyof IPlayerState;
+        const piece: IPlayerPiece = this.state[x] as IPlayerPiece;
+        return piece;
+      });
+  };
+
+  private makePieceGoHome = (index: keyof IPlayerState) => {
     const piece: IPlayerPiece = this.state[index] as IPlayerPiece;
     if (piece.coordinates !== piece.default) {
       const updatePiece: IPlayerPiece = {
@@ -100,7 +158,7 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
     return rolls;
   };
 
-  private moveToNextSpace = (piece: IPlayerPiece, roll?: number) => {
+  private moveToNextSpace = (piece: IPlayerPiece, roll?: number): IMoveToNextSpace => {
     const { color, boardSpaces } = this.state;
     const newRoll = roll ? roll - 1 : 0;
     const boardSpace = piece.boardSpace + 1;
@@ -137,72 +195,137 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
   };
 
   private moveMe = (pieceNumber: keyof IPlayerState) => {
-    const { turn, allowedToMove } = this.state;
-    const piece: IPlayerPiece = this.state[pieceNumber] as IPlayerPiece;
-    if (piece.boardSpace === 44) {
-      // logic to make sure it cant replace a home piece or go past last space goes here
-      return this.setState({
-        allowedToRoll: true,
-        allowedToMove: false,
-        roll: [0],
-        moveOnlyOnePiece: true,
-        initMove: false,
-        moving: false
-      });
-    }
+    const { turn } = this.state;
+    if (turn) {
+      const { allowedToMove, roll } = this.state;
+      const piece: IPlayerPiece = this.state[pieceNumber] as IPlayerPiece;
 
-    if (turn && allowedToMove && piece.boardSpace) {
-      this.setState({ moving: true });
-      const { roll } = this.state;
+      if (allowedToMove && piece.boardSpace) {
+        if (roll.length === 1 && roll[0] > 0) {
+          this.setState({ moving: true }, () => {
+            let myRoll = roll[0];
+            const { color, initMove } = this.state;
+            const {
+              newRoll,
+              boardSpace,
+              finalSpace,
+              coordinates,
+              originalSpace
+            } = this.moveToNextSpace(piece, myRoll);
 
-      if (roll.length === 1 && roll[0] > 0) {
-        let myRoll = roll[0];
-        const { color, initMove } = this.state;
-        const {
-          newRoll,
-          boardSpace,
-          finalSpace,
-          coordinates,
-          originalSpace
-        } = this.moveToNextSpace(piece, myRoll);
+            if (originalSpace && initMove) {
+              this.props.emptySpace(originalSpace);
+              this.setState({ initMove: false });
+            }
 
-        if (originalSpace && initMove) {
-          this.props.emptySpace(originalSpace);
-          this.setState({ initMove: false });
+            let cantMove = false;
+            if (finalSpace > 40 && newRoll === 0) {
+              const otherPieces = this.otherPieces(pieceNumber).map(p => p.boardSpace);
+              switch (finalSpace) {
+                case 44:
+                  cantMove = true;
+                  break;
+                case 43:
+                  cantMove = otherPieces.includes(44);
+                  break;
+                case 42:
+                  cantMove = otherPieces.includes(44) && otherPieces.includes(43);
+                  break;
+              }
+            }
+
+            const otherPieces =
+              finalSpace > 42 && newRoll === 0
+                ? this.canOtherPiecesMove(pieceNumber, finalSpace)
+                : {};
+            const home = finalSpace > 40;
+
+            if (newRoll === 0 && boardSpace > 0 && boardSpace < 41) {
+              const occupied: IBoardSpaceProps = this.props.isSpaceOccupied(
+                finalSpace
+              ) as IBoardSpaceProps;
+
+              if (occupied.occupied) {
+                this.props.removePiece(occupied);
+              }
+              this.props.occupySpace(finalSpace, color, pieceNumber);
+              this.setState({ moveOnlyOnePiece: true });
+            }
+
+            const updatePiece = { ...piece, boardSpace, coordinates, home, cantMove };
+            this.setState(
+              ({
+                roll: [newRoll],
+                [pieceNumber]: updatePiece,
+                ...otherPieces
+              } as {}) as IPlayerState,
+              () =>
+                setTimeout(() => {
+                  this.moveMe(pieceNumber);
+                }, 250)
+            );
+          });
+        } else {
+          this.setState({
+            allowedToRoll: true,
+            allowedToMove: false,
+            moving: false
+          });
         }
-
-        if (newRoll === 0 && boardSpace > 0 && boardSpace < 41) {
-          const occupied: IBoardSpaceProps = this.props.isSpaceOccupied(
-            finalSpace
-          ) as IBoardSpaceProps;
-
-          if (occupied.occupied) {
-            this.props.removePiece(occupied);
-          }
-          this.props.occupySpace(finalSpace, color, pieceNumber);
-          this.setState({ moveOnlyOnePiece: true });
-        }
-
-        const home = boardSpace > 40;
-        const updatePiece = { ...piece, boardSpace, coordinates, home };
-        this.setState(
-          ({
-            roll: [newRoll],
-            [pieceNumber]: updatePiece
-          } as {}) as IPlayerState,
-          () =>
-            setTimeout(() => {
-              this.moveMe(pieceNumber);
-            }, 333)
-        );
-      } else {
-        this.setState({
-          allowedToRoll: true,
-          allowedToMove: false,
-          moving: false
-        });
       }
     }
+  };
+
+  private moveThisPiece = (pieceNumber: keyof IPlayerState) => {
+    const { turn, roll } = this.state;
+    if (turn) {
+      const { moveOnlyOnePiece, moving, p1, p2, p3, p4 } = this.state;
+      const piece: IPlayerPiece = this.state[pieceNumber] as IPlayerPiece;
+      const finalSpace = piece.boardSpace + roll[0];
+      const otherPieceOnThatSpace =
+        finalSpace > 40
+          ? this.otherPieces(pieceNumber)
+              .map(p => p.boardSpace)
+              .includes(finalSpace)
+          : false;
+
+      if (finalSpace > 44 || otherPieceOnThatSpace || piece.cantMove) {
+        return;
+      } else if (
+        (p1.boardSpace !== 1 &&
+          p2.boardSpace !== 1 &&
+          p3.boardSpace !== 1 &&
+          p4.boardSpace !== 1) ||
+        piece.boardSpace === 1
+      ) {
+        if (piece.boardSpace && moveOnlyOnePiece && !moving) {
+          this.setState({ moveOnlyOnePiece: false }, () => this.moveMe(pieceNumber));
+        }
+      }
+    }
+  };
+
+  private canPieceNotMove = (
+    piece: IPlayerPiece,
+    roll: number,
+    o1: IPlayerPiece,
+    o2: IPlayerPiece,
+    o3: IPlayerPiece
+  ): boolean => {
+    let cantMove = false;
+    const finalSpace = piece.boardSpace + roll;
+    if (piece.boardSpace === 0 || piece.cantMove || finalSpace > 44) {
+      cantMove = true;
+    } else if (finalSpace > 40) {
+      if (
+        finalSpace === o1.boardSpace ||
+        finalSpace === o2.boardSpace ||
+        finalSpace === o3.boardSpace
+      ) {
+        cantMove = true;
+      }
+    }
+    return cantMove;
   };
 
   private myTurn = () => {
@@ -210,21 +333,22 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
 
     if (turn && allowedToRoll) {
       const roll =
-        (p1.boardSpace === 0 || p1.home) &&
-        (p2.boardSpace === 0 || p2.home) &&
-        (p3.boardSpace === 0 || p3.home) &&
-        (p4.boardSpace === 0 || p4.home)
-          ? this.rollDie(3)
+        (p1.boardSpace === 0 || p1.cantMove) &&
+        (p2.boardSpace === 0 || p2.cantMove) &&
+        (p3.boardSpace === 0 || p3.cantMove) &&
+        (p4.boardSpace === 0 || p4.cantMove)
+          ? // all pieces can't move so roll 3 times
+            this.rollDie(3)
           : this.rollDie(1);
 
-      // all pieces can't move so roll 3 times
-      if (
-        !roll.includes(6) &&
-        p1.boardSpace === 0 &&
-        p2.boardSpace === 0 &&
-        p3.boardSpace === 0 &&
-        p4.boardSpace === 0
-      ) {
+      // can anything move function
+      const p1move = this.canPieceNotMove(p1, roll[0], p2, p3, p4);
+      const p2move = this.canPieceNotMove(p2, roll[0], p1, p3, p4);
+      const p3move = this.canPieceNotMove(p3, roll[0], p1, p2, p4);
+      const p4move = this.canPieceNotMove(p4, roll[0], p1, p2, p3);
+
+      //if nothing can move re-roll
+      if (!roll.includes(6) && p1move && p2move && p3move && p4move) {
         this.setState({
           roll,
           allowedToRoll: true
@@ -242,8 +366,14 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
             roll
           });
           return this.moveFromJail(piece.p, piece.num);
-          // if no pieces in jail move like normal
+        } else if (p1move && p2move && p3move && p4move) {
+          //if nothing can move re-roll
+          this.setState({
+            roll,
+            allowedToRoll: true
+          });
         } else {
+          // if no pieces in jail move like normal
           this.setState({
             roll,
             allowedToRoll: false,
@@ -261,26 +391,6 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
           initMove: true,
           moveOnlyOnePiece: true
         });
-      }
-    }
-  };
-
-  private moveThisPiece = (pieceNumber: keyof IPlayerState) => {
-    const { turn } = this.state;
-    if (turn) {
-      const { moveOnlyOnePiece, moving, p1, p2, p3, p4 } = this.state;
-      const piece: IPlayerPiece = this.state[pieceNumber] as IPlayerPiece;
-
-      if (
-        (p1.boardSpace !== 1 &&
-          p2.boardSpace !== 1 &&
-          p3.boardSpace !== 1 &&
-          p4.boardSpace !== 1) ||
-        piece.boardSpace === 1
-      ) {
-        if (piece.boardSpace && moveOnlyOnePiece && !moving) {
-          this.setState({ moveOnlyOnePiece: false }, () => this.moveMe(pieceNumber));
-        }
       }
     }
   };
@@ -307,15 +417,16 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
     const { occupied, pieceNumber } = pieceForRemoval;
 
     if (["black", "yellow", "green", "red"].includes(occupied) && occupied === color) {
-      this.makePieceGoHome(color, pieceNumber as keyof IPlayerState);
+      this.makePieceGoHome(pieceNumber as keyof IPlayerState);
       this.props.removePiece({ occupied: "", pieceNumber: "" });
     }
   }
 
   public render() {
-    const { color, coordinates, p1, p2, p3, p4, roll, turn } = this.state;
+    const { color, coordinates, roll, turn } = this.state;
     const x = coordinates.x;
     const y = coordinates.y;
+    const turnGlow = turn ? "glow" : "";
 
     const displayRoll = turn
       ? roll.length > 1
@@ -347,32 +458,23 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
     const pieces =
       x > 0 && y > 0 ? (
         <>
-          <Piece
-            onClick={this.moveThisPiece.bind(this, "p1")}
-            color={color}
-            coordinates={{ x: p1.coordinates.x, y: p1.coordinates.y }}
-          />
-          <Piece
-            onClick={this.moveThisPiece.bind(this, "p2")}
-            color={color}
-            coordinates={{ x: p2.coordinates.x, y: p2.coordinates.y }}
-          />
-          <Piece
-            onClick={this.moveThisPiece.bind(this, "p3")}
-            color={color}
-            coordinates={{ x: p3.coordinates.x, y: p3.coordinates.y }}
-          />
-          <Piece
-            onClick={this.moveThisPiece.bind(this, "p4")}
-            color={color}
-            coordinates={{ x: p4.coordinates.x, y: p4.coordinates.y }}
-          />
+          {["p1", "p2", "p3", "p4"].map(p => {
+            const x: keyof IPlayerState = p as keyof IPlayerState;
+            const piece: IPlayerPiece = this.state[x] as IPlayerPiece;
+            return (
+              <Piece
+                onClick={this.moveThisPiece.bind(this, x)}
+                color={color}
+                coordinates={{ x: piece.coordinates.x, y: piece.coordinates.y }}
+              />
+            );
+          })}
         </>
       ) : null;
 
     return (
       <div>
-        <div onClick={this.myTurn} className={`Player ${color}`} style={style}>
+        <div onClick={this.myTurn} className={`Player ${color} ${turnGlow}`} style={style}>
           <div style={textStyle}>
             <div>{color.charAt(0).toUpperCase() + color.slice(1)}</div>
             <div>{displayRoll}</div>
