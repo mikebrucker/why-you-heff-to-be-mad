@@ -463,6 +463,7 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
             const piece: IPlayerPiece = this.state[x] as IPlayerPiece;
             return (
               <Piece
+                key={p}
                 onClick={this.moveThisPiece.bind(this, x)}
                 color={color}
                 coordinates={{ x: piece.coordinates.x, y: piece.coordinates.y }}
