@@ -14,7 +14,7 @@ interface IBoardSpaceProps {
   pieceNumber: string;
 }
 
-const BoardSpace: React.SFC<IBoardSpaceProps> = props => {
+const BoardSpace: React.SFC<IBoardSpaceProps> = (props) => {
   const { coordinates, red, black, yellow, green, letter } = props;
   const { x, y } = coordinates;
 
@@ -23,11 +23,11 @@ const BoardSpace: React.SFC<IBoardSpaceProps> = props => {
       ? {
           position: "absolute",
           top: `${y * 50}px`,
-          left: `${x * 50}px`
+          left: `${x * 50}px`,
         }
-      : { position: "absolute", top: `-9999px`, left: `-9999px` };
+      : { position: "absolute", top: "-9999px", left: "-9999px" };
 
-  const startSpotColor =
+  const spaceColor =
     red === 1 || red > 40
       ? "red"
       : black === 1 || black > 40
@@ -36,10 +36,10 @@ const BoardSpace: React.SFC<IBoardSpaceProps> = props => {
       ? "yellow"
       : green === 1 || green > 40
       ? "green"
-      : "papayawhip";
+      : "neutral";
 
   return (
-    <div className={`BoardSpace ${startSpotColor}`} style={style}>
+    <div className={`BoardSpace ${spaceColor}`} style={style}>
       <div className="letter">{letter}</div>
     </div>
   );

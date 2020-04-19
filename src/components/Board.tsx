@@ -56,8 +56,8 @@ export default class Board extends Component<{}, IBoardState> {
       { occupied: "", pieceNumber: "" },
       { occupied: "", pieceNumber: "" },
       { occupied: "", pieceNumber: "" },
-      { occupied: "", pieceNumber: "" }
-    ]
+      { occupied: "", pieceNumber: "" },
+    ],
   };
 
   public occupySpace = (space: number, color: string, pieceNumber: string) => {
@@ -108,7 +108,7 @@ export default class Board extends Component<{}, IBoardState> {
           red={r}
           coordinates={{
             x: boardMapCoordinates[i].x,
-            y: boardMapCoordinates[i].y
+            y: boardMapCoordinates[i].y,
           }}
         />
       );
@@ -135,15 +135,16 @@ export default class Board extends Component<{}, IBoardState> {
           red={r}
           coordinates={{
             x: boardHomeCoordinates[j].x,
-            y: boardHomeCoordinates[j].y
+            y: boardHomeCoordinates[j].y,
           }}
         />
       );
     }
 
-    const players = ["black", "yellow", "green", "red"].map(color => {
+    const players = ["black", "yellow", "green", "red"].map((color) => {
       return (
         <Player
+          name={color}
           key={color}
           color={color}
           boardSpaces={boardSpaces}

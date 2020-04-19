@@ -9,25 +9,7 @@ interface IPieceProps {
   onClick: (e: any) => void;
 }
 
-interface IPieceState {
-  coordinates: ICoordinates;
-}
-
-export default class Piece extends Component<IPieceProps, IPieceState> {
-  public state = {
-    coordinates: this.props.coordinates
-  };
-
-  componentDidUpdate() {
-    const coordinatesProps = this.props.coordinates;
-    const coordinatesState = this.state.coordinates;
-    if (coordinatesProps !== coordinatesState) {
-      this.setState({
-        coordinates: coordinatesProps
-      });
-    }
-  }
-
+export default class Piece extends Component<IPieceProps> {
   public render() {
     const { color, coordinates } = this.props;
     const x = coordinates.x;
@@ -38,9 +20,9 @@ export default class Piece extends Component<IPieceProps, IPieceState> {
         ? {
             position: "absolute",
             top: `${y * 50}px`,
-            left: `${x * 50}px`
+            left: `${x * 50}px`,
           }
-        : { position: "absolute", top: `0`, left: `0` };
+        : { position: "absolute", top: "0", left: "0" };
 
     return <div onClick={this.props.onClick} className={`Piece ${color}-piece`} style={style} />;
   }

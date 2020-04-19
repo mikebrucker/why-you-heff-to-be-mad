@@ -27,6 +27,7 @@ interface IMoveToNextSpace {
 
 interface IPlayerProps {
   color: string;
+  name: string;
   boardSpaces: Array<JSX.Element>;
   pieceForRemoval: IBoardSpaceProps;
   occupySpace: (space: number, color: string, pieceNumber: string) => void;
@@ -36,9 +37,10 @@ interface IPlayerProps {
 }
 
 interface IPlayerState {
+  readonly color: string;
+  readonly name: string;
   readonly coordinates: ICoordinates;
   readonly boardSpaces: Array<JSX.Element>;
-  readonly color: string;
   roll: Array<number>;
   turn: boolean;
   allowedToRoll: boolean;
@@ -57,14 +59,15 @@ const EMPTY_PLAYER = {
   default: { x: 0, y: 0 },
   boardSpace: 0,
   home: false,
-  cantMove: false
+  cantMove: false,
 };
 
 export default class Player extends Component<IPlayerProps, IPlayerState> {
   public state = {
+    color: this.props.color,
+    name: this.props.name,
     boardSpaces: this.props.boardSpaces,
     coordinates: { x: 0, y: 0 },
-    color: this.props.color,
     roll: [0],
     turn: true,
     allowedToRoll: true,
@@ -75,7 +78,7 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
     p1: EMPTY_PLAYER,
     p2: EMPTY_PLAYER,
     p3: EMPTY_PLAYER,
-    p4: EMPTY_PLAYER
+    p4: EMPTY_PLAYER,
   };
 
   private canOtherPiecesMove = (pieceNumber: keyof IPlayerState, boardSpace: number) => {
@@ -85,9 +88,9 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
       "p1" as keyof IPlayerState,
       "p2" as keyof IPlayerState,
       "p3" as keyof IPlayerState,
-      "p4" as keyof IPlayerState
-    ].filter(p => p !== pieceNumber);
-    const otherPiecesSpaces = otherPieces.map(p => p.boardSpace);
+      "p4" as keyof IPlayerState,
+    ].filter((p) => p !== pieceNumber);
+    const otherPiecesSpaces = otherPieces.map((p) => p.boardSpace);
     if (boardSpace === 44) {
       if (otherPiecesSpaces.includes(43)) {
         const piece = otherPieces
@@ -121,7 +124,7 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
       returnValue = piecesToReturn.reduce((obj, item) => {
         return {
           ...obj,
-          ...item
+          ...item,
         };
       }, {});
     }
@@ -130,8 +133,8 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
 
   private otherPieces = (pieceNumber: keyof IPlayerState): Array<IPlayerPiece> => {
     return ["p1", "p2", "p3", "p4"]
-      .filter(p => p !== pieceNumber)
-      .map(p => {
+      .filter((p) => p !== pieceNumber)
+      .map((p) => {
         const x: keyof IPlayerState = p as keyof IPlayerState;
         const piece: IPlayerPiece = this.state[x] as IPlayerPiece;
         return piece;
@@ -144,7 +147,7 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
       const updatePiece: IPlayerPiece = {
         ...piece,
         coordinates: piece.default,
-        boardSpace: 0
+        boardSpace: 0,
       };
       this.setState(({ [index]: updatePiece } as {}) as IPlayerState);
     }
@@ -162,15 +165,15 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
     const { color, boardSpaces } = this.state;
     const newRoll = roll ? roll - 1 : 0;
     const boardSpace = piece.boardSpace + 1;
-    const nextSpace = boardSpaces.filter(space => space.props[color] === boardSpace)[0];
+    const nextSpace = boardSpaces.filter((space) => space.props[color] === boardSpace)[0];
     const finalSpace = nextSpace.props.black ? nextSpace.props.black : boardSpace;
     const coordinates: ICoordinates = {
       x: nextSpace.props.coordinates.x,
-      y: nextSpace.props.coordinates.y
+      y: nextSpace.props.coordinates.y,
     };
     const originalSpace =
       roll && piece.boardSpace
-        ? boardSpaces.filter(space => space.props[color] === piece.boardSpace)[0].props.black
+        ? boardSpaces.filter((space) => space.props[color] === piece.boardSpace)[0].props.black
         : null;
 
     return { newRoll, boardSpace, finalSpace, coordinates, originalSpace };
@@ -190,7 +193,7 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
     const updatePiece = { ...piece, boardSpace, coordinates };
 
     this.setState(({
-      [pieceNumber]: updatePiece
+      [pieceNumber]: updatePiece,
     } as {}) as IPlayerState);
   };
 
@@ -210,7 +213,7 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
               boardSpace,
               finalSpace,
               coordinates,
-              originalSpace
+              originalSpace,
             } = this.moveToNextSpace(piece, myRoll);
 
             if (originalSpace && initMove) {
@@ -220,7 +223,7 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
 
             let cantMove = false;
             if (finalSpace > 40 && newRoll === 0) {
-              const otherPieces = this.otherPieces(pieceNumber).map(p => p.boardSpace);
+              const otherPieces = this.otherPieces(pieceNumber).map((p) => p.boardSpace);
               switch (finalSpace) {
                 case 44:
                   cantMove = true;
@@ -257,7 +260,7 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
               ({
                 roll: [newRoll],
                 [pieceNumber]: updatePiece,
-                ...otherPieces
+                ...otherPieces,
               } as {}) as IPlayerState,
               () =>
                 setTimeout(() => {
@@ -269,7 +272,7 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
           this.setState({
             allowedToRoll: true,
             allowedToMove: false,
-            moving: false
+            moving: false,
           });
         }
       }
@@ -285,7 +288,7 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
       const otherPieceOnThatSpace =
         finalSpace > 40
           ? this.otherPieces(pieceNumber)
-              .map(p => p.boardSpace)
+              .map((p) => p.boardSpace)
               .includes(finalSpace)
           : false;
 
@@ -351,7 +354,7 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
       if (!roll.includes(6) && p1move && p2move && p3move && p4move) {
         this.setState({
           roll,
-          allowedToRoll: true
+          allowedToRoll: true,
         });
         // roll a six to get a piece out or go again
       } else if (roll.includes(6)) {
@@ -359,18 +362,18 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
           .map((p, i) => {
             return { p, num: `p${i + 1}` };
           })
-          .filter(p => p.p.boardSpace === 0)[0];
+          .filter((p) => p.p.boardSpace === 0)[0];
         // if you have jail pieces auto moves out one
         if (piece) {
           this.setState({
-            roll
+            roll,
           });
           return this.moveFromJail(piece.p, piece.num);
         } else if (p1move && p2move && p3move && p4move) {
           //if nothing can move re-roll
           this.setState({
             roll,
-            allowedToRoll: true
+            allowedToRoll: true,
           });
         } else {
           // if no pieces in jail move like normal
@@ -379,7 +382,7 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
             allowedToRoll: false,
             allowedToMove: true,
             initMove: true,
-            moveOnlyOnePiece: true
+            moveOnlyOnePiece: true,
           });
         }
         // no 6 and pieces on board normal move
@@ -389,7 +392,7 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
           allowedToRoll: false,
           allowedToMove: true,
           initMove: true,
-          moveOnlyOnePiece: true
+          moveOnlyOnePiece: true,
         });
       }
     }
@@ -423,7 +426,7 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
   }
 
   public render() {
-    const { color, coordinates, roll, turn } = this.state;
+    const { name, color, coordinates, roll, turn } = this.state;
     const x = coordinates.x;
     const y = coordinates.y;
     const turnGlow = turn ? "glow" : "";
@@ -441,7 +444,7 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
         ? {
             position: "absolute",
             top: `${y * 50}px`,
-            left: `${x * 50}px`
+            left: `${x * 50}px`,
           }
         : { position: "absolute", top: "-9999px", left: "-9999px" };
     const textStyle: CSS.Properties =
@@ -451,14 +454,14 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
             position: "absolute",
             bottom: 0,
             left: "50%",
-            transform: "translateX(-50%)"
+            transform: "translateX(-50%)",
           }
         : {};
 
     const pieces =
       x > 0 && y > 0 ? (
         <>
-          {["p1", "p2", "p3", "p4"].map(p => {
+          {["p1", "p2", "p3", "p4"].map((p) => {
             const x: keyof IPlayerState = p as keyof IPlayerState;
             const piece: IPlayerPiece = this.state[x] as IPlayerPiece;
             return (
@@ -477,7 +480,7 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
       <div>
         <div onClick={this.myTurn} className={`Player ${color} ${turnGlow}`} style={style}>
           <div style={textStyle}>
-            <div>{color.charAt(0).toUpperCase() + color.slice(1)}</div>
+            <div>{name.charAt(0).toUpperCase() + name.slice(1)}</div>
             <div>{displayRoll}</div>
           </div>
         </div>
