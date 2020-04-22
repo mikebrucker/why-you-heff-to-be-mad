@@ -3,6 +3,7 @@ import "../scss/Board.scss";
 import BoardSpace from "./BoardSpace";
 import Player from "./Player";
 import { boardMapCoordinates, boardHomeCoordinates } from "../models/Board";
+import angryFace from "../images/angry-face.svg";
 
 export interface IBoardSpaceProps {
   occupied: string;
@@ -157,10 +158,16 @@ export default class Board extends Component<{}, IBoardState> {
       );
     });
 
+    const arrows = ["black", "yellow", "green", "red"].map((color) => {
+      return <div key={color} className={`arrow-${color}`} />;
+    });
+
     return (
       <div className="Board">
         {players}
         {boardSpaces}
+        {arrows}
+        <img className="angry-face" src={angryFace} alt="angry face" />
       </div>
     );
   }

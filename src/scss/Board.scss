@@ -9,6 +9,10 @@
   border: 10px solid black;
   outline: 10px solid burlywood;
 
+  * {
+    box-sizing: border-box;
+  }
+
   // classname + bgcolor, fontcolor, bordercolor, piece-bgcolor
   @mixin color($color1, $color2, $color3, $color4) {
     .#{$color1} {
@@ -32,7 +36,66 @@
     background-color: papayawhip;
   }
 
-  * {
-    box-sizing: border-box;
+  // board arrows
+  @mixin arrow($color) {
+    .arrow-#{$color} {
+      width: 100px;
+      height: 20px;
+      position: absolute;
+      background: $color;
+    }
+    .arrow-#{$color}:after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 0;
+      height: 0;
+      border-left: 10px solid burlywood;
+      border-top: 10px solid transparent;
+      border-bottom: 10px solid transparent;
+    }
+    .arrow-#{$color}:before {
+      content: "";
+      position: absolute;
+      right: -10px;
+      bottom: 0;
+      width: 0;
+      height: 0;
+      border-left: 10px solid $color;
+      border-top: 10px solid transparent;
+      border-bottom: 10px solid transparent;
+    }
+  }
+  @include arrow(black);
+  @include arrow(yellow);
+  @include arrow(green);
+  @include arrow(red);
+  .arrow-black {
+    transform: rotate(270deg);
+    left: 180px;
+    top: 530px;
+  }
+  .arrow-yellow {
+    left: 55px;
+    top: 220px;
+  }
+  .arrow-green {
+    transform: rotate(90deg);
+    left: 367px;
+    top: 95px;
+  }
+  .arrow-red {
+    transform: rotate(180deg);
+    left: 495px;
+    top: 408px;
+  }
+
+  .angry-face {
+    width: 48px;
+    height: 48px;
+    position: absolute;
+    top: 300px;
+    left: 300px;
   }
 }
