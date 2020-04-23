@@ -66,25 +66,25 @@ $red: rgba(255, 0, 0, 0.75);
     }
   }
 
-  // classname + bgcolor, font color
-  @mixin color($color1, $color2) {
-    .#{$color1} {
+  // classname, bgcolor, font color
+  @mixin color($name, $color1, $color2) {
+    .#{$name} {
       background-color: $color1;
       color: $color2;
     }
   }
-  @include color(black, white);
-  @include color(yellow, black);
-  @include color(green, white);
-  @include color(red, black);
+  @include color("black", black, white);
+  @include color("yellow", yellow, black);
+  @include color("green", green, white);
+  @include color("red", red, black);
 
-  @mixin input-color($color1, $color2) {
-    .#{$color1}-input {
+  @mixin input-color($name, $color2) {
+    .#{$name}-input {
       background-color: $color2;
     }
   }
-  @include input-color(black, $black);
-  @include input-color(yellow, $yellow);
-  @include input-color(green, $green);
-  @include input-color(red, $red);
+  @include input-color("black", $black);
+  @include input-color("yellow", $yellow);
+  @include input-color("green", $green);
+  @include input-color("red", $red);
 }

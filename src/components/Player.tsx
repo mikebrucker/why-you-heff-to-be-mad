@@ -399,18 +399,19 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
   };
 
   public componentDidMount() {
+    const turn = Boolean(this.props.name);
     switch (this.props.color) {
       case "black":
-        this.setState({ ...black, turn: Boolean(this.props.name) });
+        this.setState({ ...black, turn });
         break;
       case "yellow":
-        this.setState({ ...yellow, turn: Boolean(this.props.name) });
+        this.setState({ ...yellow, turn });
         break;
       case "green":
-        this.setState({ ...green, turn: Boolean(this.props.name) });
+        this.setState({ ...green, turn });
         break;
       case "red":
-        this.setState({ ...red, turn: Boolean(this.props.name) });
+        this.setState({ ...red, turn });
     }
   }
 

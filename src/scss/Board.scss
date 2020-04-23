@@ -18,9 +18,9 @@
     font-weight: bolder;
   }
 
-  // classname + bgcolor, fontcolor, bordercolor, piece-bgcolor
-  @mixin color($color1, $color2, $color3, $color4) {
-    .#{$color1} {
+  // classname, bgcolor, fontcolor, bordercolor, piece-bgcolor
+  @mixin color($name, $color1, $color2, $color3, $color4) {
+    .#{$name} {
       background-color: $color1;
       color: $color2;
       border: 2px solid $color3;
@@ -31,10 +31,10 @@
       }
     }
   }
-  @include color(black, white, gray, #111);
-  @include color(yellow, black, black, goldenrod);
-  @include color(green, white, black, darkgreen);
-  @include color(red, black, black, darkred);
+  @include color("black", black, white, gray, #111);
+  @include color("yellow", yellow, black, black, goldenrod);
+  @include color("green", green, white, black, darkgreen);
+  @include color("red", red, black, black, darkred);
 
   // neutral board space
   .neutral {
@@ -42,14 +42,14 @@
   }
 
   // board arrows
-  @mixin arrow($color) {
-    .arrow-#{$color} {
+  @mixin arrow($name, $color) {
+    .arrow-#{$name} {
       width: 100px;
       height: 20px;
       position: absolute;
       background: $color;
     }
-    .arrow-#{$color}:after {
+    .arrow-#{$name}:after {
       content: "";
       position: absolute;
       left: 0;
@@ -60,7 +60,7 @@
       border-top: 10px solid transparent;
       border-bottom: 10px solid transparent;
     }
-    .arrow-#{$color}:before {
+    .arrow-#{$name}:before {
       content: "";
       position: absolute;
       right: -10px;
@@ -72,10 +72,10 @@
       border-bottom: 10px solid transparent;
     }
   }
-  @include arrow(black);
-  @include arrow(yellow);
-  @include arrow(green);
-  @include arrow(red);
+  @include arrow("black", black);
+  @include arrow("yellow", yellow);
+  @include arrow("green", green);
+  @include arrow("red", red);
   .arrow-black {
     transform: rotate(270deg);
     left: 180px;

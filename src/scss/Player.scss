@@ -26,10 +26,10 @@ $red: rgba(255, 0, 0, 0.75);
   }
 }
 
-@include shadow-animation(black, $black);
-@include shadow-animation(yellow, $yellow);
-@include shadow-animation(green, $green);
-@include shadow-animation(red, $red);
+@include shadow-animation("black", $black);
+@include shadow-animation("yellow", $yellow);
+@include shadow-animation("green", $green);
+@include shadow-animation("red", $red);
 
 .Player {
   width: 148px;
@@ -37,8 +37,8 @@ $red: rgba(255, 0, 0, 0.75);
   font-size: 20px;
   border-radius: 8px;
 
-  @include color-glow(black);
-  @include color-glow(yellow);
-  @include color-glow(green);
-  @include color-glow(red);
+  @include color-glow("black");
+  @include color-glow("yellow");
+  @include color-glow("green");
+  @include color-glow("red");
 }

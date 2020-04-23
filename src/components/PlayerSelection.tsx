@@ -33,7 +33,7 @@ class PlayerSelection extends Component<Props, State> {
   render() {
     const sections = ["yellow", "green", "black", "red"].map((section) => {
       return (
-        <div className={`${section}`}>
+        <div key={section} className={`${section}`}>
           <input
             className={`${section}-input`}
             placeholder="Enter Name"
