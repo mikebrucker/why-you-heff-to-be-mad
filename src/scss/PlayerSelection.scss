@@ -1,0 +1,90 @@
+$black: rgba(0, 0, 0, 0.75);
+$yellow: rgba(255, 255, 0, 0.75);
+$green: rgba(0, 128, 0, 0.75);
+$red: rgba(255, 0, 0, 0.75);
+
+.PlayerSelection {
+  width: 648px;
+  height: 648px;
+  font-size: 0;
+  text-align: center;
+  position: relative;
+
+  .start {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    button {
+      font-size: 48px;
+      font-weight: bolder;
+      border: solid 1px #333;
+      border-radius: 10px;
+      padding: 8px 16px;
+      outline: none;
+      background: linear-gradient(to right, black, yellow, green, red);
+      box-shadow: 2px 2px 0 0 #333;
+
+      &:active {
+        position: relative;
+        top: 2px;
+        left: 2px;
+        box-shadow: none;
+      }
+    }
+  }
+
+  .black,
+  .yellow,
+  .green,
+  .red {
+    font-size: 24px;
+    display: inline-block;
+    border: none;
+    width: 324px;
+    height: 324px;
+    position: relative;
+
+    input {
+      font-size: 24px;
+      width: 224px;
+      height: 48px;
+      background-color: rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      border: solid 1px #333;
+      outline: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+
+      &::placeholder {
+        color: #111;
+      }
+    }
+  }
+
+  // classname + bgcolor, font color
+  @mixin color($color1, $color2) {
+    .#{$color1} {
+      background-color: $color1;
+      color: $color2;
+    }
+  }
+  @include color(black, white);
+  @include color(yellow, black);
+  @include color(green, white);
+  @include color(red, black);
+
+  @mixin input-color($color1, $color2) {
+    .#{$color1}-input {
+      background-color: $color2;
+    }
+  }
+  @include input-color(black, $black);
+  @include input-color(yellow, $yellow);
+  @include input-color(green, $green);
+  @include input-color(red, $red);
+}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { FunctionComponent } from "react";
 import CSS from "csstype";
 import "../scss/BoardSpace.scss";
 import { ICoordinates } from "./Player";
@@ -14,7 +14,7 @@ interface IBoardSpaceProps {
   pieceNumber: string;
 }
 
-const BoardSpace: React.SFC<IBoardSpaceProps> = (props) => {
+const BoardSpace: FunctionComponent<IBoardSpaceProps> = (props) => {
   const { coordinates, red, black, yellow, green, letter } = props;
   const { x, y } = coordinates;
 

@@ -69,7 +69,7 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
     boardSpaces: this.props.boardSpaces,
     coordinates: { x: 0, y: 0 },
     roll: [0],
-    turn: true,
+    turn: false,
     allowedToRoll: true,
     allowedToMove: false,
     moveOnlyOnePiece: false,
@@ -401,16 +401,16 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
   public componentDidMount() {
     switch (this.props.color) {
       case "black":
-        this.setState({ ...black });
+        this.setState({ ...black, turn: Boolean(this.props.name) });
         break;
       case "yellow":
-        this.setState({ ...yellow });
+        this.setState({ ...yellow, turn: Boolean(this.props.name) });
         break;
       case "green":
-        this.setState({ ...green });
+        this.setState({ ...green, turn: Boolean(this.props.name) });
         break;
       case "red":
-        this.setState({ ...red });
+        this.setState({ ...red, turn: Boolean(this.props.name) });
     }
   }
 
@@ -431,14 +431,6 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
     const y = coordinates.y;
     const turnGlow = turn ? "glow" : "";
 
-    const displayRoll = turn
-      ? roll.length > 1
-        ? `${roll[0]}, ${roll[1]}, ${roll[2]}`
-        : roll.length === 1 && roll[0] > 0
-        ? `${roll[0]}`
-        : "Click to Roll"
-      : "Wait Your Turn";
-
     const style: CSS.Properties =
       coordinates && x && y
         ? {
@@ -458,8 +450,18 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
           }
         : {};
 
+    const displayRoll = name
+      ? turn
+        ? roll.length > 1
+          ? `${roll[0]}, ${roll[1]}, ${roll[2]}`
+          : roll.length === 1 && roll[0] > 0
+          ? `${roll[0]}`
+          : "Click to Roll"
+        : "Wait Your Turn"
+      : "";
+
     const pieces =
-      x > 0 && y > 0 ? (
+      name && x > 0 && y > 0 ? (
         <>
           {["p1", "p2", "p3", "p4"].map((p) => {
             const x: keyof IPlayerState = p as keyof IPlayerState;
@@ -480,7 +482,7 @@ export default class Player extends Component<IPlayerProps, IPlayerState> {
       <div>
         <div onClick={this.myTurn} className={`Player ${color} ${turnGlow}`} style={style}>
           <div style={textStyle}>
-            <div>{name.charAt(0).toUpperCase() + name.slice(1)}</div>
+            <div>{name}</div>
             <div>{displayRoll}</div>
           </div>
         </div>

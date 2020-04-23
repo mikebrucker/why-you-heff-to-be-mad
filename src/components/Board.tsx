@@ -9,12 +9,15 @@ export interface IBoardSpaceProps {
   occupied: string;
   pieceNumber: string;
 }
+interface IBoardProps {
+  players: Array<{ name: string; color: string }>;
+}
 export interface IBoardState {
   board: Array<IBoardSpaceProps>;
   pieceForRemoval: IBoardSpaceProps;
 }
 
-export default class Board extends Component<{}, IBoardState> {
+export default class Board extends Component<IBoardProps, IBoardState> {
   public state = {
     pieceForRemoval: { occupied: "", pieceNumber: "" },
     board: [
@@ -84,6 +87,7 @@ export default class Board extends Component<{}, IBoardState> {
 
   public render() {
     const { pieceForRemoval } = this.state;
+    const { players } = this.props;
     const boardSpaces: Array<JSX.Element> = [];
 
     // Create boardspaces 1-40
@@ -142,12 +146,12 @@ export default class Board extends Component<{}, IBoardState> {
       );
     }
 
-    const players = ["black", "yellow", "green", "red"].map((color) => {
+    const renderPlayers = players.map((player) => {
       return (
         <Player
-          name={color}
-          key={color}
-          color={color}
+          name={player.name}
+          key={player.color}
+          color={player.color}
           boardSpaces={boardSpaces}
           pieceForRemoval={pieceForRemoval}
           removePiece={this.removePiece}
@@ -164,7 +168,8 @@ export default class Board extends Component<{}, IBoardState> {
 
     return (
       <div className="Board">
-        {players}
+        <div className="title">Why You Heff to be Mad?</div>
+        {renderPlayers}
         {boardSpaces}
         {arrows}
         <img className="angry-face" src={angryFace} alt="angry face" />
